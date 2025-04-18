@@ -43,20 +43,28 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun AuthScreen() {
 
+    // Toggle to switch between Login and SignUp UI
     var isLogin by remember { mutableStateOf(true) }
+
+    // States for login input fields
     var loginEmail by remember { mutableStateOf("") }
     var loginPassword by remember { mutableStateOf("") }
+
+    // States for signup input fields
     var signupName by remember { mutableStateOf("") }
     var signupEmail by remember { mutableStateOf("") }
     var signupPassword by remember { mutableStateOf("") }
 
+    // Colors from MaterialTheme
     var primaryCol = MaterialTheme.colorScheme.primary
     var secondaryCol = MaterialTheme.colorScheme.secondary
     var tertiaryCol = MaterialTheme.colorScheme.tertiary
 
+    // Scaffold for top-bar & content layout
     Scaffold(
         containerColor = Color.White,
         topBar = {
+            // Simple Top Bar for App name
             TopAppBar(
                 title =
                     {
@@ -72,6 +80,7 @@ fun AuthScreen() {
         }
     ) { innerPadding ->
 
+        // Main Content
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -82,6 +91,7 @@ fun AuthScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+            // Row with Login and Signup toggles
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -106,6 +116,7 @@ fun AuthScreen() {
 
             Spacer(modifier = Modifier.height(18.dp))
 
+            // Card container for Form fields & buttons
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -117,7 +128,7 @@ fun AuthScreen() {
             ) {
 
                 if (isLogin) {
-                    // Login
+                    // Login Form
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -126,10 +137,13 @@ fun AuthScreen() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
+                        // Reusable Email TextField
                         EmailField(value = loginEmail, onValueChange = { loginEmail = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol)
 
+                        // Reusable Password TextField
                         PassField(value = loginPassword, onValueChange = { loginPassword = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol)
 
+                        // Submit Button - Login
                         Button(
                             colors = ButtonDefaults.buttonColors(primaryCol),
                             onClick = {
@@ -140,7 +154,7 @@ fun AuthScreen() {
 
                     }
                 } else {
-                    // Signup
+                    // Signup Form
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -149,6 +163,7 @@ fun AuthScreen() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
+                        // User-Name TextField
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = signupName,
@@ -161,10 +176,13 @@ fun AuthScreen() {
                             )
                         )
 
+                        // Reusable Email TextField
                         EmailField(value = signupEmail, onValueChange = { signupEmail = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol)
 
+                        // Reusable Password TextField
                         PassField(value = signupPassword, onValueChange = { signupPassword = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol)
 
+                        // Submit Button - Sign Up
                         Button(
                             colors = ButtonDefaults.buttonColors(primaryCol),
                             onClick = {
@@ -180,10 +198,10 @@ fun AuthScreen() {
 
             Spacer(modifier = Modifier.height(15.dp))
 
+            // Typical bottom prompt to toggle between Login & Signup Ui
             if(isLogin) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Don't have an account? ", color = Color.Black)
-
                     Text(
                         " Sign Up",
                         color = primaryCol,
@@ -195,7 +213,6 @@ fun AuthScreen() {
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Already have an account? ", color = Color.Black)
-
                     Text(
                         " Login",
                         color = primaryCol,
@@ -210,6 +227,7 @@ fun AuthScreen() {
     }
 }
 
+// Reusable function for Email TextField
 @Composable
 fun EmailField(value: String, onValueChange: (String) -> Unit, primaryColor: Color, tertiaryColor: Color) {
     OutlinedTextField(
@@ -225,6 +243,7 @@ fun EmailField(value: String, onValueChange: (String) -> Unit, primaryColor: Col
     )
 }
 
+// Reusable function for Password TextField
 @Composable
 fun PassField(value: String, onValueChange: (String) -> Unit, primaryColor: Color, tertiaryColor: Color) {
     OutlinedTextField(
