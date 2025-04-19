@@ -32,9 +32,10 @@ class AuthViewModel: ViewModel() {
     }
 
     // Signup function
-    fun signup(email: String, pass: String) {
+    fun signup(email: String, pass: String, username: String) {
         _authLoading.value = true
-        authRepo.signupUser(email, pass) { success, error ->
+
+        authRepo.registerUser(email, pass, username) { success, error ->
             _authLoading.value = false
             _authSuccess.value = success
             _authError.value = error

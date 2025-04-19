@@ -50,11 +50,12 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.material.icons.extended)
+    implementation(platform(libs.firebase.bom)) // Firebase Bom
+    implementation(libs.firebase.auth) // firebase auth
+    implementation(libs.firebase.firestore) // firestore
+    implementation(libs.androidx.lifecycle.viewmodel.compose) // compose viewModel
+    implementation(libs.androidx.material.icons.extended) // for visibility icon
+    implementation(libs.androidx.navigation.compose) // for navigation
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

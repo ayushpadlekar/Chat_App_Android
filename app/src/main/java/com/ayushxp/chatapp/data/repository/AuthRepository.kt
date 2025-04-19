@@ -1,11 +1,15 @@
 package com.ayushxp.chatapp.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.firestore.FirebaseFirestore
 
 class AuthRepository {
 
-    // Private instance of Firebase Auth
+    // Private instances of Firebase Auth & Firebase Firestore
     private val fireAuth = FirebaseAuth.getInstance()
+    private val fireStore = FirebaseFirestore.getInstance()
+
 
     // Check if user is logged in (not null)
     fun isLoggedin(): Boolean {
@@ -26,14 +30,32 @@ class AuthRepository {
     }
 
     // Create new user with email & password & return result- true/false
-    fun signupUser(email: String, pass: String, result: (Boolean, String?)->Unit) {
+    fun registerUser(email: String, pass: String, username: String, result: (Boolean, String?)->Unit) {
 
         fireAuth.createUserWithEmailAndPassword(email, pass)
             .addOnCompleteListener {
                 if(it.isSuccessful) {
-                    result(true, null)
+                    val uid = fireAuth.currentUser?.uid ?: return@addOnCompleteListener
+
+                    fireStore.collection("users").document(uid)
+                        .set(
+                            hashMapOf(
+                                "uid" to uid,
+                                "email" to email,
+                                "username" to username
+                            )
+                        ).addOnSuccessListener {
+                            result(true, null)
+                        }.addOnFailureListener {
+                            result(false, it.message)
+                        }
+
                 } else {
-                    result(false, it.exception?.message)
+                    val errMsg = when(it.exception) {
+                        is FirebaseAuthUserCollisionException -> "Email already exists"
+                        else -> it.exception?.message
+                    }
+                    result(false, errMsg)
                 }
             }
     }

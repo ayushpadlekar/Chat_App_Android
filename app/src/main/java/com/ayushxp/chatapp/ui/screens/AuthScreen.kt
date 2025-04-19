@@ -53,6 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ayushxp.chatapp.ui.theme.ChatAppTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.ayushxp.chatapp.utils.Validators.isValidEmail
 import com.ayushxp.chatapp.utils.Validators.isValidPassword
 import com.ayushxp.chatapp.utils.Validators.isValidUsername
@@ -60,7 +62,7 @@ import com.ayushxp.chatapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthScreen(viewModel: AuthViewModel = viewModel()) { // gets existing ViewModel without recomposition
+fun AuthScreen(navController: NavHostController, viewModel: AuthViewModel = viewModel()) { // gets existing ViewModel without recomposition
 
     // Colors from MaterialTheme
     var primaryCol = MaterialTheme.colorScheme.primary
@@ -101,8 +103,7 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) { // gets existing ViewMo
     // Scaffold for top-bar & content layout
     Scaffold(
         containerColor = Color.White,
-        topBar = {
-            // Simple Top Bar for App name
+        topBar = { // Simple Top Bar for App name
             TopAppBar(
                 title =
                     {
@@ -184,6 +185,7 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) { // gets existing ViewMo
                         // Submit Button - Login
                         Button(
                             colors = ButtonDefaults.buttonColors(primaryCol),
+                            enabled = !authLoading, // disable button while loading to prevent double clicks
                             onClick = {
                                 // Clear previous errors
                                 loginEmailError = null
@@ -195,7 +197,7 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) { // gets existing ViewMo
                                 } else if (!isValidPassword(loginPassword)) {
                                     loginPasswordError = "Password must be at least 6 characters"
                                 } else {
-                                    viewModel.login(loginEmail, loginPassword)
+                                    viewModel.login(loginEmail, loginPassword) // call viewModel's login function
                                     lastAction = "login"
                                 }
 //                                if(loginEmail.isNotBlank() && loginPassword.isNotBlank()) {
@@ -251,11 +253,14 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) { // gets existing ViewMo
                         // Submit Button - Sign Up
                         Button(
                             colors = ButtonDefaults.buttonColors(primaryCol),
+                            enabled = !authLoading, // disable button while loading to prevent double clicks
                             onClick = {
+                                // Clear previous errors
                                 signupNameError = null
                                 signupEmailError = null
                                 signupPasswordError = null
 
+                                // Validate inputs
                                 if (!isValidUsername(signupName)) {
                                     signupNameError = "Username must be lowercase, between 3-15 letters, and start with letter."
                                 } else if (!isValidEmail(signupEmail)) {
@@ -263,14 +268,14 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) { // gets existing ViewMo
                                 } else if (!isValidPassword(signupPassword)) {
                                     signupPasswordError = "Password must be at least 6 characters"
                                 } else {
-                                    viewModel.signup(signupEmail, signupPassword)
+                                    viewModel.signup(signupEmail, signupPassword, signupName) // call viewModel's signup function
                                     lastAction = "signup"
                                 }
                             }
                         ) {
                             if (authLoading) {
                                 Column(
-                                    modifier = Modifier.size(width = 55.dp, height = 25.dp),
+                                    modifier = Modifier.size(width = 65.dp, height = 25.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     CircularProgressIndicator(modifier = Modifier.size(25.dp), color = Color.White)
@@ -319,6 +324,12 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) { // gets existing ViewMo
                 } else if (lastAction == "signup") { // signup successful toast
                     Toast.makeText(context, "Signup Successful", Toast.LENGTH_SHORT).show()
                 }
+
+                // Navigate to ChatList screen on AuthSuccess
+                navController.navigate("chatlist") {
+                    popUpTo("auth") { inclusive = true }
+                }
+
                 // Reset to prevent repeated toasts
                 lastAction = null
                 viewModel.resetAuthState()
@@ -328,8 +339,11 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) { // gets existing ViewMo
             if (authError != null) {
                 if (lastAction == "login") { // login unsuccessful toast
                     Toast.makeText(context, "Login Unsuccessful", Toast.LENGTH_SHORT).show()
-                } else if (lastAction == "signup") { // signup unsuccessful toast
-                    Toast.makeText(context, "Signup Unsuccessful", Toast.LENGTH_SHORT).show()
+                } else if (lastAction == "signup") {
+                    if(authError == "Email already exists") // email already exists toast
+                        Toast.makeText(context, "Email already exists", Toast.LENGTH_SHORT).show()
+                    else // signup unsuccessful toast
+                        Toast.makeText(context, "Signup Unsuccessful", Toast.LENGTH_SHORT).show()
                 }
                 // Reset to prevent repeated toasts
                 lastAction = null
@@ -387,14 +401,14 @@ fun PassField(
             VisualTransformation.None
         else
             PasswordVisualTransformation(),
-        trailingIcon = {
+        trailingIcon = { // trailing icon for password visibility toggle
             IconButton(onClick = {passwordVisible = !passwordVisible}) {
                 Icon(
                     imageVector = if (passwordVisible)
                         Icons.Filled.VisibilityOff
                     else
                         Icons.Filled.Visibility,
-                    contentDescription = if (passwordVisible) "Hide Password" else "Show Password"
+                    contentDescription = "Password Visibility Toggle"
                 )
             }
         },
@@ -412,6 +426,6 @@ fun PassField(
 @Composable
 fun AuthScreenPreview() {
     ChatAppTheme(darkTheme = false, dynamicColor = false) {
-        AuthScreen()
+        AuthScreen(navController = rememberNavController())
     }
 }
