@@ -1,5 +1,6 @@
 package com.ayushxp.chatapp.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,12 +11,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -26,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,17 +43,31 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ayushxp.chatapp.ui.theme.ChatAppTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ayushxp.chatapp.utils.Validators.isValidEmail
+import com.ayushxp.chatapp.utils.Validators.isValidPassword
+import com.ayushxp.chatapp.utils.Validators.isValidUsername
+import com.ayushxp.chatapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthScreen() {
+fun AuthScreen(viewModel: AuthViewModel = viewModel()) { // gets existing ViewModel without recomposition
 
-    // Toggle to switch between Login and SignUp UI
+    // Colors from MaterialTheme
+    var primaryCol = MaterialTheme.colorScheme.primary
+    var secondaryCol = MaterialTheme.colorScheme.secondary
+    var tertiaryCol = MaterialTheme.colorScheme.tertiary
+
+    // Toggle to switch between Login and SignUp ui
     var isLogin by remember { mutableStateOf(true) }
 
     // States for login input fields
@@ -55,10 +79,24 @@ fun AuthScreen() {
     var signupEmail by remember { mutableStateOf("") }
     var signupPassword by remember { mutableStateOf("") }
 
-    // Colors from MaterialTheme
-    var primaryCol = MaterialTheme.colorScheme.primary
-    var secondaryCol = MaterialTheme.colorScheme.secondary
-    var tertiaryCol = MaterialTheme.colorScheme.tertiary
+    // Error states for login input fields
+    var loginEmailError by remember { mutableStateOf<String?>(null) }
+    var loginPasswordError by remember { mutableStateOf<String?>(null) }
+
+    // Error states for signup input fields
+    var signupNameError by remember { mutableStateOf<String?>(null) }
+    var signupEmailError by remember { mutableStateOf<String?>(null) }
+    var signupPasswordError by remember { mutableStateOf<String?>(null) }
+
+
+    // AuthViewModel's states - loading, success, error
+    val authLoading = viewModel.authLoading.collectAsState().value // manually get value
+    val authSuccess = viewModel.authSuccess.collectAsState().value // manually get value
+    val authError by viewModel.authError.collectAsState() // using delegation 'by' to get value
+
+    // State to track which button was clicked 'login' or 'signup' - for showing Toast
+    var lastAction by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
     // Scaffold for top-bar & content layout
     Scaffold(
@@ -137,19 +175,45 @@ fun AuthScreen() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
-                        // Reusable Email TextField
-                        EmailField(value = loginEmail, onValueChange = { loginEmail = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol)
+                        // Reusable Email TextField - 5 params
+                        EmailField(value = loginEmail, onValueChange = { loginEmail = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol, error = loginEmailError)
 
-                        // Reusable Password TextField
-                        PassField(value = loginPassword, onValueChange = { loginPassword = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol)
+                        // Reusable Password TextField - 5 params
+                        PassField(value = loginPassword, onValueChange = { loginPassword = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol, error = loginPasswordError)
 
                         // Submit Button - Login
                         Button(
                             colors = ButtonDefaults.buttonColors(primaryCol),
                             onClick = {
+                                // Clear previous errors
+                                loginEmailError = null
+                                loginPasswordError = null
+
+                                // Validate inputs
+                                if (!isValidEmail(loginEmail)) {
+                                    loginEmailError = "Enter a valid email"
+                                } else if (!isValidPassword(loginPassword)) {
+                                    loginPasswordError = "Password must be at least 6 characters"
+                                } else {
+                                    viewModel.login(loginEmail, loginPassword)
+                                    lastAction = "login"
+                                }
+//                                if(loginEmail.isNotBlank() && loginPassword.isNotBlank()) {
+//                                    viewModel.login(loginEmail, loginPassword)
+//                                    lastAction = "login"
+//                                }
                             }
                         ) {
-                            Text("Login", color = Color.White, fontSize = 20.sp)
+                            if (authLoading) {
+                                Column(
+                                    modifier = Modifier.size(width = 55.dp, height = 25.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(25.dp), color = Color.White)
+                                }
+                            } else {
+                                Text("Login", color = Color.White, fontSize = 20.sp)
+                            }
                         }
 
                     }
@@ -170,6 +234,8 @@ fun AuthScreen() {
                             onValueChange = { signupName = it },
                             label = { Text(text = "User name") },
                             singleLine = true,
+                            isError = signupNameError != null,
+                            supportingText = { signupNameError?.let { Text(it) } },
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor = tertiaryCol,
                                 focusedBorderColor = primaryCol
@@ -177,18 +243,41 @@ fun AuthScreen() {
                         )
 
                         // Reusable Email TextField
-                        EmailField(value = signupEmail, onValueChange = { signupEmail = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol)
+                        EmailField(value = signupEmail, onValueChange = { signupEmail = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol, error = signupEmailError)
 
                         // Reusable Password TextField
-                        PassField(value = signupPassword, onValueChange = { signupPassword = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol)
+                        PassField(value = signupPassword, onValueChange = { signupPassword = it }, primaryColor = primaryCol, tertiaryColor = tertiaryCol, error = signupPasswordError)
 
                         // Submit Button - Sign Up
                         Button(
                             colors = ButtonDefaults.buttonColors(primaryCol),
                             onClick = {
+                                signupNameError = null
+                                signupEmailError = null
+                                signupPasswordError = null
+
+                                if (!isValidUsername(signupName)) {
+                                    signupNameError = "Username must be lowercase, between 3-15 letters, and start with letter."
+                                } else if (!isValidEmail(signupEmail)) {
+                                    signupEmailError = "Enter a valid email"
+                                } else if (!isValidPassword(signupPassword)) {
+                                    signupPasswordError = "Password must be at least 6 characters"
+                                } else {
+                                    viewModel.signup(signupEmail, signupPassword)
+                                    lastAction = "signup"
+                                }
                             }
                         ) {
-                            Text("Sign Up", color = Color.White, fontSize = 20.sp)
+                            if (authLoading) {
+                                Column(
+                                    modifier = Modifier.size(width = 55.dp, height = 25.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(25.dp), color = Color.White)
+                                }
+                            } else {
+                                Text("Sign Up", color = Color.White, fontSize = 20.sp)
+                            }
                         }
 
                     }
@@ -222,6 +311,30 @@ fun AuthScreen() {
                     )
                 }
             }
+
+            // Show toasts on authSuccess
+            if (authSuccess) {
+                if (lastAction == "login") { // login successful toast
+                    Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+                } else if (lastAction == "signup") { // signup successful toast
+                    Toast.makeText(context, "Signup Successful", Toast.LENGTH_SHORT).show()
+                }
+                // Reset to prevent repeated toasts
+                lastAction = null
+                viewModel.resetAuthState()
+            }
+
+            // Show toasts on authError
+            if (authError != null) {
+                if (lastAction == "login") { // login unsuccessful toast
+                    Toast.makeText(context, "Login Unsuccessful", Toast.LENGTH_SHORT).show()
+                } else if (lastAction == "signup") { // signup unsuccessful toast
+                    Toast.makeText(context, "Signup Unsuccessful", Toast.LENGTH_SHORT).show()
+                }
+                // Reset to prevent repeated toasts
+                lastAction = null
+                viewModel.resetAuthState()
+            }
         }
 
     }
@@ -229,13 +342,21 @@ fun AuthScreen() {
 
 // Reusable function for Email TextField
 @Composable
-fun EmailField(value: String, onValueChange: (String) -> Unit, primaryColor: Color, tertiaryColor: Color) {
+fun EmailField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    primaryColor: Color,
+    tertiaryColor: Color,
+    error: String? = null
+) {
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,
-        label = { Text(text = "Email") },
+        label = { Text("Email") },
         singleLine = true,
+        isError = error != null,
+        supportingText = { error?.let { Text(it) } },
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = tertiaryColor,
             focusedBorderColor = primaryColor
@@ -245,14 +366,39 @@ fun EmailField(value: String, onValueChange: (String) -> Unit, primaryColor: Col
 
 // Reusable function for Password TextField
 @Composable
-fun PassField(value: String, onValueChange: (String) -> Unit, primaryColor: Color, tertiaryColor: Color) {
+fun PassField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    primaryColor: Color,
+    tertiaryColor: Color,
+    error: String? = null
+) {
+    var passwordVisible by remember { mutableStateOf(false) }
+
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,
-        label = { Text(text = "Password") },
+        label = { Text("Password") },
         singleLine = true,
-        visualTransformation = PasswordVisualTransformation(),
+        isError = error != null,
+        supportingText = { error?.let { Text(it) } },
+        visualTransformation = if (passwordVisible)
+            VisualTransformation.None
+        else
+            PasswordVisualTransformation(),
+        trailingIcon = {
+            IconButton(onClick = {passwordVisible = !passwordVisible}) {
+                Icon(
+                    imageVector = if (passwordVisible)
+                        Icons.Filled.VisibilityOff
+                    else
+                        Icons.Filled.Visibility,
+                    contentDescription = if (passwordVisible) "Hide Password" else "Show Password"
+                )
+            }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = tertiaryColor,
             focusedBorderColor = primaryColor
@@ -265,5 +411,7 @@ fun PassField(value: String, onValueChange: (String) -> Unit, primaryColor: Colo
 @Preview
 @Composable
 fun AuthScreenPreview() {
-    AuthScreen()
+    ChatAppTheme(darkTheme = false, dynamicColor = false) {
+        AuthScreen()
+    }
 }
