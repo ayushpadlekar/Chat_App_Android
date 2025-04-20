@@ -2,6 +2,7 @@ package com.ayushxp.chatapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.ayushxp.chatapp.data.repository.AuthRepository
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -32,10 +33,10 @@ class AuthViewModel: ViewModel() {
     }
 
     // Signup function
-    fun signup(email: String, pass: String, username: String) {
+    fun signup(email: String, pass: String, username: String, timestamp: Timestamp) {
         _authLoading.value = true
 
-        authRepo.registerUser(email, pass, username) { success, error ->
+        authRepo.registerUser(email, pass, username, timestamp) { success, error ->
             _authLoading.value = false
             _authSuccess.value = success
             _authError.value = error

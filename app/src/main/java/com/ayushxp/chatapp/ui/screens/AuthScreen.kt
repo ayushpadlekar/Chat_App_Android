@@ -11,20 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -45,9 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,10 +44,14 @@ import com.ayushxp.chatapp.ui.theme.ChatAppTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.ayushxp.chatapp.ui.components.CircularLoading
+import com.ayushxp.chatapp.ui.components.EmailField
+import com.ayushxp.chatapp.ui.components.PassField
 import com.ayushxp.chatapp.utils.Validators.isValidEmail
 import com.ayushxp.chatapp.utils.Validators.isValidPassword
 import com.ayushxp.chatapp.utils.Validators.isValidUsername
 import com.ayushxp.chatapp.viewmodel.AuthViewModel
+import com.google.firebase.Timestamp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -207,12 +200,7 @@ fun AuthScreen(navController: NavHostController, viewModel: AuthViewModel = view
                             }
                         ) {
                             if (authLoading) {
-                                Column(
-                                    modifier = Modifier.size(width = 55.dp, height = 25.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    CircularProgressIndicator(modifier = Modifier.size(25.dp), color = Color.White)
-                                }
+                                CircularLoading(55.dp)
                             } else {
                                 Text("Login", color = Color.White, fontSize = 20.sp)
                             }
@@ -267,19 +255,14 @@ fun AuthScreen(navController: NavHostController, viewModel: AuthViewModel = view
                                     signupEmailError = "Enter a valid email"
                                 } else if (!isValidPassword(signupPassword)) {
                                     signupPasswordError = "Password must be at least 6 characters"
-                                } else {
-                                    viewModel.signup(signupEmail, signupPassword, signupName) // call viewModel's signup function
+                                } else { // call viewModel's signup function
+                                    viewModel.signup(signupEmail, signupPassword, signupName, Timestamp.now())
                                     lastAction = "signup"
                                 }
                             }
                         ) {
                             if (authLoading) {
-                                Column(
-                                    modifier = Modifier.size(width = 65.dp, height = 25.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    CircularProgressIndicator(modifier = Modifier.size(25.dp), color = Color.White)
-                                }
+                                CircularLoading(65.dp)
                             } else {
                                 Text("Sign Up", color = Color.White, fontSize = 20.sp)
                             }
@@ -317,6 +300,7 @@ fun AuthScreen(navController: NavHostController, viewModel: AuthViewModel = view
                 }
             }
 
+
             // Show toasts on authSuccess
             if (authSuccess) {
                 if (lastAction == "login") { // login successful toast
@@ -334,6 +318,7 @@ fun AuthScreen(navController: NavHostController, viewModel: AuthViewModel = view
                 lastAction = null
                 viewModel.resetAuthState()
             }
+
 
             // Show toasts on authError
             if (authError != null) {
@@ -354,71 +339,6 @@ fun AuthScreen(navController: NavHostController, viewModel: AuthViewModel = view
     }
 }
 
-// Reusable function for Email TextField
-@Composable
-fun EmailField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    primaryColor: Color,
-    tertiaryColor: Color,
-    error: String? = null
-) {
-    OutlinedTextField(
-        modifier = Modifier.fillMaxWidth(),
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text("Email") },
-        singleLine = true,
-        isError = error != null,
-        supportingText = { error?.let { Text(it) } },
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = tertiaryColor,
-            focusedBorderColor = primaryColor
-        )
-    )
-}
-
-// Reusable function for Password TextField
-@Composable
-fun PassField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    primaryColor: Color,
-    tertiaryColor: Color,
-    error: String? = null
-) {
-    var passwordVisible by remember { mutableStateOf(false) }
-
-    OutlinedTextField(
-        modifier = Modifier.fillMaxWidth(),
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text("Password") },
-        singleLine = true,
-        isError = error != null,
-        supportingText = { error?.let { Text(it) } },
-        visualTransformation = if (passwordVisible)
-            VisualTransformation.None
-        else
-            PasswordVisualTransformation(),
-        trailingIcon = { // trailing icon for password visibility toggle
-            IconButton(onClick = {passwordVisible = !passwordVisible}) {
-                Icon(
-                    imageVector = if (passwordVisible)
-                        Icons.Filled.VisibilityOff
-                    else
-                        Icons.Filled.Visibility,
-                    contentDescription = "Password Visibility Toggle"
-                )
-            }
-        },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = tertiaryColor,
-            focusedBorderColor = primaryColor
-        )
-    )
-}
 
 
 // Preview

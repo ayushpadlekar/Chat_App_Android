@@ -1,11 +1,8 @@
 package com.ayushxp.chatapp.ui.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.ayushxp.chatapp.ui.components.NewChatFab
+import com.ayushxp.chatapp.ui.components.NoChatsUi
 import com.ayushxp.chatapp.ui.theme.ChatAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,23 +52,19 @@ fun ChatListScreen(navController: NavHostController) {
                             onClick = {  }
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.AccountCircle,
+                                imageVector = Icons.Filled.MoreVert,
                                 tint = primaryCol,
                                 modifier = Modifier.size(30.dp),
-                                contentDescription = "Account"
+                                contentDescription = "More"
                             )
                         }
                     },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = secondaryCol)
             )
-        }
+        },
+        floatingActionButton = { NewChatFab(navController) }
     ) {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(it)
-        ) {
-            Text("Chat List Screen")
-        }
+        NoChatsUi(it)
     }
 }
 

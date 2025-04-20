@@ -1,5 +1,6 @@
 package com.ayushxp.chatapp.data.repository
 
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestore
@@ -30,19 +31,21 @@ class AuthRepository {
     }
 
     // Create new user with email & password & return result- true/false
-    fun registerUser(email: String, pass: String, username: String, result: (Boolean, String?)->Unit) {
+    fun registerUser(email: String, pass: String, username: String, timestamp: Timestamp, result: (Boolean, String?)->Unit) {
 
         fireAuth.createUserWithEmailAndPassword(email, pass)
             .addOnCompleteListener {
                 if(it.isSuccessful) {
                     val uid = fireAuth.currentUser?.uid ?: return@addOnCompleteListener
 
+                    // Add user details to Firestore
                     fireStore.collection("users").document(uid)
                         .set(
                             hashMapOf(
                                 "uid" to uid,
                                 "email" to email,
-                                "username" to username
+                                "username" to username,
+                                "timestamp" to timestamp,
                             )
                         ).addOnSuccessListener {
                             result(true, null)

@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.ayushxp.chatapp.ui.screens.AuthScreen
 import com.ayushxp.chatapp.ui.screens.ChatListScreen
+import com.ayushxp.chatapp.ui.screens.SearchUserScreen
 
 @Composable
 fun Navigation(navController: NavHostController, startDest: String) {
@@ -16,6 +17,9 @@ fun Navigation(navController: NavHostController, startDest: String) {
         }
         composable("chatlist") {
             ChatListScreen(navController)
+        }
+        composable("newchat") {
+            SearchUserScreen(navController)
         }
     }
 }
