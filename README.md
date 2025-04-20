@@ -2,6 +2,32 @@
 
 This is a simple Firebase-based chat application built using **Jetpack Compose**, designed for the Android Internship Assignment at **TwoFour Labs**.
 
+### ⬇️ Download APK
+
+https://github.com/ayushpadlekar/Chat_App_Android/releases/tag/v1.0.0
+
+---
+
+## 🛠️ Setup Instructions
+
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/ayushpadlekar/Chat_App_Android.git
+
+2. Open the project in Android Studio.
+
+3. Add your own Firebase configuration:
+    * Go to Firebase Console
+    * Create a project
+    * Add an Android app (package name must match this project)
+    * Download google-services.json and place it in: app/google-services.json
+
+
+4. Enable the following in Firebase:
+    - Firebase Authentication (Email/Password)
+    - Firestore Database
+    - Build and run the project on an emulator or real device.
+
 ---
 
 ## ✅ Features Completed
@@ -35,24 +61,3 @@ This is a simple Firebase-based chat application built using **Jetpack Compose**
 - MVVM Architecture
 - StateFlow for reactive state management
 
----
-
-## 🛠️ Setup Instructions
-
-1. Clone the repo:
-   ```bash
-   git clone https://github.com/ayushpadlekar/Chat_App_Android.git
-
-2. Open the project in Android Studio.
-3. Add your own Firebase configuration:
-
-- Go to Firebase Console
-- Create a project
-- Add an Android app (package name must match this project)
-- Download google-services.json and place it in: app/google-services.json
-
-
-4. Enable the following in Firebase:
-- Firebase Authentication (Email/Password)
-- Firestore Database
-- Build and run the project on an emulator or real device.
