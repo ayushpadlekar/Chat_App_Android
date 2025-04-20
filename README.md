@@ -3,8 +3,7 @@
 This is a simple Firebase-based chat application built using **Jetpack Compose**, designed for the Android Internship Assignment at **TwoFour Labs**.
 
 ### ⬇️ Download APK
-
-https://github.com/ayushpadlekar/Chat_App_Android/releases/tag/v1.0.0
+https://github.com/ayushpadlekar/Chat_App_Android/releases/download/v1.0.0/Chat_App_Android.apk
 
 ---
 
