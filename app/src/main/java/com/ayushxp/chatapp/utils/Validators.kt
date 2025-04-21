@@ -13,9 +13,10 @@ object Validators {
     }
 
     fun isValidUsername(username: String): Boolean {
-        return username.length in 3..15 && username.all {
-            //username should be in lowercase, should be a letter or digit & first character should always be a letter.
-            it.isLowerCase() && it.isLetterOrDigit() && it != ' '
-        } && username[0].isLetter()
+        //username should be in lowercase, should be a letter or digit & first character should always be a letter.
+        return username.length in 3..15 &&
+                username[0].isLetter() &&
+                username.all { it.isLetterOrDigit() } &&
+                username.all { it.isLetter().not() || it.isLowerCase() }
     }
 }

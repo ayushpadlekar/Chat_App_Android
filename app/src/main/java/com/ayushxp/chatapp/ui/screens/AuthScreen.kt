@@ -249,7 +249,7 @@ fun AuthScreen(navController: NavHostController, viewModel: AuthViewModel = view
                                 signupPasswordError = null
 
                                 // Validate inputs
-                                if (!isValidUsername(signupName)) {
+                                if (!isValidUsername(signupName.trim())) {
                                     signupNameError = "Username must be lowercase, between 3-15 letters, and start with letter."
                                 } else if (!isValidEmail(signupEmail)) {
                                     signupEmailError = "Enter a valid email"

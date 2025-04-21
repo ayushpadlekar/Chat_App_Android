@@ -67,24 +67,43 @@ class ChatViewModel : ViewModel() {
 
     // Function to send a message
     fun sendMessage(chatId: String, text: String) {
+
+        // Current User Uid instance
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
+        // 1 new Message object
         val msg = Message(
             sender = currentUserId,
             text = text,
             timestamp = Timestamp.now()
         )
 
-        firestoreRef.collection("messages")
+        // 2 Reference of message document in Firestore
+        val messageRef = firestoreRef.collection("messages")
             .document(chatId)
             .collection("messages")
-            .add(msg)
+            .document()
+
+        // 3 Reference to the chat document
+        val chatRef = firestoreRef.collection("chats")
+            .document(chatId)
+
+        // 4 Set the message in Firestore
+        messageRef.set(msg)
+
+        // 5 Update chat's lastMessage and timestamp
+        chatRef.update(
+            mapOf(
+                "lastMessage" to msg.text,
+                "timestamp" to msg.timestamp
+            )
+        )
     }
 
 
-
+    // Private MutableStateFlow to hold chat preview list.
     private val _chatList = MutableStateFlow<List<ChatPreview>>(emptyList())
-    val chatList: StateFlow<List<ChatPreview>> = _chatList
+    val chatList: StateFlow<List<ChatPreview>> = _chatList // then store in normal StateFlow.
 
     fun loadChatsForCurrentUser() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return

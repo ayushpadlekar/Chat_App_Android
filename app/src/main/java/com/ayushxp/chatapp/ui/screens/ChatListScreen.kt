@@ -55,7 +55,7 @@ fun ChatListScreen(navController: NavHostController) {
     val chatList by chatVm.chatList.collectAsState()
 
     // Load chat list when screen opens
-    LaunchedEffect(Unit) {
+    LaunchedEffect(chatVm) {
         chatVm.loadChatsForCurrentUser()
     }
 
@@ -96,12 +96,11 @@ fun ChatListScreen(navController: NavHostController) {
             Column(
                 modifier = Modifier
                     .padding(paddingValues)
-                    .padding(16.dp)
                     .fillMaxSize()
             ) {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize()
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxSize().padding(vertical = 10.dp, horizontal = 12.dp)
                 ) {
                     items(chatList.size) { index ->
                         val chat = chatList[index]
@@ -120,8 +119,8 @@ fun ChatItem(chat: ChatPreview, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 4.dp),
+            .padding(top = 10.dp)
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -135,7 +134,8 @@ fun ChatItem(chat: ChatPreview, onClick: () -> Unit) {
                 Text(
                     text = chat.otherUsername,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.getDefault())
@@ -149,8 +149,7 @@ fun ChatItem(chat: ChatPreview, onClick: () -> Unit) {
 
             Text(
                 text = chat.lastMessage,
-                color = Color.DarkGray,
-                maxLines = 1
+                color = Color.DarkGray
             )
         }
     }

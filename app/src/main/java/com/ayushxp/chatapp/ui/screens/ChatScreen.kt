@@ -10,18 +10,29 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.West
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -46,6 +58,11 @@ import java.util.Locale
 @Composable
 fun ChatScreen(chatId: String, username: String, navController: NavHostController) {
 
+    // Colors from MaterialTheme
+    var primaryCol = MaterialTheme.colorScheme.primary
+    var secondaryCol = MaterialTheme.colorScheme.secondary
+    var tertiaryCol = MaterialTheme.colorScheme.tertiary
+
     val viewModel: ChatViewModel = viewModel()
     val messages by viewModel.messages.collectAsState()
     var messageInput by remember { mutableStateOf(TextFieldValue("")) }
@@ -58,6 +75,7 @@ fun ChatScreen(chatId: String, username: String, navController: NavHostControlle
     }
 
     Scaffold(
+        containerColor = secondaryCol, // color for top & bottom bar- both.
         topBar = {
             TopAppBar(
                 title = { Text(username) },
@@ -65,7 +83,8 @@ fun ChatScreen(chatId: String, username: String, navController: NavHostControlle
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.West, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(secondaryCol)
             )
         },
         bottomBar = {
@@ -76,23 +95,31 @@ fun ChatScreen(chatId: String, username: String, navController: NavHostControlle
                     .navigationBarsPadding(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextField(
+                TextField( // Text Input Field
                     value = messageInput,
                     onValueChange = { messageInput = it },
                     placeholder = { Text("Type a message...") },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).clip(RoundedCornerShape(corner = CornerSize(30.dp))),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = primaryCol,
+                        unfocusedIndicatorColor = Color.Black,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
+                    )
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(
+                IconButton( // Send Button
                     onClick = {
                         val text = messageInput.text.trim()
                         if (text.isNotEmpty()) {
                             viewModel.sendMessage(chatId, text)
                             messageInput = TextFieldValue("")
                         }
-                    }
+                    },
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = primaryCol),
+                    modifier = Modifier.size(50.dp)
                 ) {
-                    Text("Send")
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White, modifier = Modifier.padding(5.dp))
                 }
             }
         }
@@ -102,7 +129,7 @@ fun ChatScreen(chatId: String, username: String, navController: NavHostControlle
                 .fillMaxSize()
                 .padding(it)
                 .background(Color.White)
-                .padding(12.dp),
+                .padding(horizontal = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(messages.size) { index ->
@@ -121,11 +148,25 @@ fun ChatScreen(chatId: String, username: String, navController: NavHostControlle
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
-                    Text(
-                        text = message.text,
-                        fontSize = 16.sp,
-                        color = if (message.sender == currentUserId) Color.Blue else Color.Black
-                    )
+                    // Message Card Ui
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = if(message.sender == currentUserId) secondaryCol else Color.White
+                        ),
+                        modifier = Modifier.padding(
+                            start = if(message.sender == currentUserId) 30.dp else 0.dp,
+                            end = if(message.sender != currentUserId) 30.dp else 0.dp,
+                        ),
+                        elevation = CardDefaults.cardElevation(1.dp)
+                    ) {
+                        Text(
+                            text = message.text,
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(10.dp))
                 }
             }
