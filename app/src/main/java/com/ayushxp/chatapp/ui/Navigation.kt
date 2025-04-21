@@ -22,10 +22,11 @@ fun Navigation(navController: NavHostController, startDest: String) {
         composable("newchat") {
             SearchUserScreen(navController)
         }
-        composable("chat/{chatId}/{username}") { backStackEntry ->
+        composable("chat/{chatId}/{otherUserId}/{username}") { backStackEntry ->
             val chatId = backStackEntry.arguments?.getString("chatId") ?: ""
+            val otherUserId = backStackEntry.arguments?.getString("otherUserId") ?: ""
             val username = backStackEntry.arguments?.getString("username") ?: "Chat"
-            ChatScreen(chatId = chatId, username = username, navController)
+            ChatScreen(chatId = chatId, otherUserId = otherUserId, username = username, navController)
         }
     }
 }

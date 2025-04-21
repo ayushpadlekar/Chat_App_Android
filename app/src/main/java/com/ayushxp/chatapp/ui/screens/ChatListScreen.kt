@@ -105,7 +105,7 @@ fun ChatListScreen(navController: NavHostController) {
                     items(chatList.size) { index ->
                         val chat = chatList[index]
                         ChatItem(chat, onClick = {
-                            navController.navigate("chat/${chat.chatId}/${chat.otherUsername}")
+                            navController.navigate("chat/${chat.chatId}/${chat.otherUserId}/${chat.otherUsername}")
                         })
                     }
                 }

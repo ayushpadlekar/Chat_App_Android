@@ -40,26 +40,23 @@ class ChatRepository {
         otherUid: String,
         onResult: (chatId: String?) -> Unit
     ) {
+        val chatKey = listOf(currentUid, otherUid).sorted().joinToString("_")
 
-        // Find if chat already exists with same 2 user UIDs
-        chatsRef.whereArrayContains("users", currentUid).get()
-            .addOnSuccessListener { chat ->
-                val existingChat = chat.documents.find { doc ->
-                    val users = doc.get("users") as? List<String>
-                    users?.contains(otherUid) == true
-                }
-
-                if (existingChat != null) {
-                    onResult(existingChat.id) // Chat already exists
+        // Find if chat already exists
+        chatsRef.whereEqualTo("chatKey", chatKey).get()
+            .addOnSuccessListener { result ->
+                if (!result.isEmpty) {
+                    val existingChat = result.documents[0]
+                    onResult(existingChat.id)
                 } else {
-                    // Create new chat
-                    val newChatMap = hashMapOf(
+                    val newChat = hashMapOf(
                         "users" to listOf(currentUid, otherUid),
+                        "chatKey" to chatKey,
                         "lastMessage" to "",
                         "timestamp" to Timestamp.now()
                     )
 
-                    chatsRef.add(newChatMap)
+                    chatsRef.add(newChat)
                         .addOnSuccessListener { newDoc ->
                             onResult(newDoc.id)
                         }

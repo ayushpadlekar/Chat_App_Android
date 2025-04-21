@@ -67,7 +67,7 @@ fun SearchUserScreen(navController: NavHostController) {
             onUserClick = { user ->
                 viewModel.getOrCreateChat(user.uid) { chatId ->
                     if (chatId != null) {
-                        navController.navigate("chat/$chatId/${user.username}") {
+                        navController.navigate("chat/$chatId/${user.uid}/${user.username}") {
                             popUpTo("search") { inclusive = true }
                         }
                     }

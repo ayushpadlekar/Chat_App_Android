@@ -56,7 +56,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(chatId: String, username: String, navController: NavHostController) {
+fun ChatScreen(chatId: String, otherUserId: String, username: String, navController: NavHostController) {
 
     // Colors from MaterialTheme
     var primaryCol = MaterialTheme.colorScheme.primary
@@ -112,7 +112,7 @@ fun ChatScreen(chatId: String, username: String, navController: NavHostControlle
                     onClick = {
                         val text = messageInput.text.trim()
                         if (text.isNotEmpty()) {
-                            viewModel.sendMessage(chatId, text)
+                            viewModel.sendMessage(chatId, text, otherUserId)
                             messageInput = TextFieldValue("")
                         }
                     },

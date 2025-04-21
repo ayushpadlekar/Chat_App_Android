@@ -66,7 +66,7 @@ class ChatViewModel : ViewModel() {
     }
 
     // Function to send a message
-    fun sendMessage(chatId: String, text: String) {
+    fun sendMessage(chatId: String, text: String, otherUserId: String) {
 
         // Current User Uid instance
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
@@ -91,11 +91,14 @@ class ChatViewModel : ViewModel() {
         // 4 Set the message in Firestore
         messageRef.set(msg)
 
-        // 5 Update chat's lastMessage and timestamp
+        // 5 Update chat document with last message, timestamp, users, and chatKey
+        val chatKey = listOf(currentUserId, otherUserId).sorted().joinToString("_")
         chatRef.update(
             mapOf(
                 "lastMessage" to msg.text,
-                "timestamp" to msg.timestamp
+                "timestamp" to msg.timestamp,
+                "users" to listOf(currentUserId, otherUserId),
+                "chatKey" to chatKey
             )
         )
     }
@@ -105,9 +108,11 @@ class ChatViewModel : ViewModel() {
     private val _chatList = MutableStateFlow<List<ChatPreview>>(emptyList())
     val chatList: StateFlow<List<ChatPreview>> = _chatList // then store in normal StateFlow.
 
+    // Function to load chats
     fun loadChatsForCurrentUser() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
+        // Query to get chats for current user
         firestoreRef.collection("chats")
             .whereArrayContains("users", currentUserId)
             .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
@@ -118,17 +123,23 @@ class ChatViewModel : ViewModel() {
                 }
 
                 val chatSummaries = mutableListOf<ChatPreview>()
+                val totalChats = snapshot.documents.size
+                if (totalChats == 0) {
+                    _chatList.value = emptyList()
+                    return@addSnapshotListener
+                }
+                var loadedCount = 0
 
+                // Loop through each chat document
                 for (doc in snapshot.documents) {
+
                     val chatId = doc.id
                     val users = doc.get("users") as? List<String> ?: continue
                     val lastMessage = doc.getString("lastMessage") ?: ""
                     val timestamp = doc.getTimestamp("timestamp") ?: Timestamp.now()
 
-                    // Get the other user
                     val otherUserId = users.firstOrNull { it != currentUserId } ?: continue
 
-                    // Fetch other user's name
                     firestoreRef.collection("users").document(otherUserId).get()
                         .addOnSuccessListener { userDoc ->
                             val username = userDoc.getString("username") ?: "User"
@@ -140,9 +151,14 @@ class ChatViewModel : ViewModel() {
                                 timestamp = timestamp
                             )
                             chatSummaries.add(chatSummary)
-                            _chatList.value = chatSummaries.sortedByDescending { it.timestamp }
+                            loadedCount++
+
+                            if (loadedCount == totalChats) {
+                                _chatList.value = chatSummaries.sortedByDescending { it.timestamp }
+                            }
                         }
                 }
             }
     }
+
 }
