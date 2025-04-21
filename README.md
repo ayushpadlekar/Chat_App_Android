@@ -1,6 +1,6 @@
 # Chat App 📱
 
-This is a simple Firebase-based chat application built using **Jetpack Compose**, designed for the Android Internship Assignment at **TwoFour Labs**.
+This is a simple Firebase-based chat application built using **Jetpack Compose**, designed for the Android Internship Assignment at **Achilies TwoFour Labs**.
 
 ### ⬇️ Download APK
 https://github.com/ayushpadlekar/Chat_App_Android/releases/download/v1.0.0/Chat_App_Android.apk
@@ -20,12 +20,21 @@ https://github.com/ayushpadlekar/Chat_App_Android/releases/download/v1.0.0/Chat_
     * Create a project
     * Add an Android app (package name must match this project)
     * Download google-services.json and place it in: app/google-services.json
-
+    * Generate SHA-1 & SHA-256 from android studio & paste them in Firebase Console's Project Settings.
 
 4. Enable the following in Firebase:
     - Firebase Authentication (Email/Password)
     - Firestore Database
-    - Build and run the project on an emulator or real device.
+  
+5. Create Firestore Index (required):
+      - If you see an index error with a link in Logcat, click the link and create the composite index from Firebase Console.
+      - or directly navigate to Indexes tab in firestore and click 'Add Index'.
+      - Enter these values -
+         - Collection ID - chats
+         - Fields indexed - users ~Arrays, timestamp ~Descending, __name __ ~Descending
+         - Query scope - Collection
+
+6. Build and run the project on an emulator or real device.
 
 ---
 
@@ -37,7 +46,7 @@ https://github.com/ayushpadlekar/Chat_App_Android/releases/download/v1.0.0/Chat_
   - Toast messages on login/signup success/failure
 - 💬 Realtime One-on-One Chat
   - Create new chats with users
-  - Send and receive messages in real-time using Firebase Firestore
+  - Send and receive messages in real-time
   - Timestamp shown for each message
 - 📋 Chat List Screen
   - Shows all recent conversations
@@ -48,6 +57,8 @@ https://github.com/ayushpadlekar/Chat_App_Android/releases/download/v1.0.0/Chat_
   - Start chat by selecting a user
 - 🧭 Jetpack Compose Navigation
 - 💅 Material 3 UI with custom theme
+  - Light custom theme with primary, secondary, and tertiary colors
+  - Consistent top bars and buttons
 
 ---
 
