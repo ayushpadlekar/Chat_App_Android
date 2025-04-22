@@ -2,12 +2,16 @@ package com.ayushxp.chatapp.data.repository
 
 import com.ayushxp.chatapp.data.model.User
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class ChatRepository {
 
     // Firestore reference to "users" collection
     private val firestoreCollection = FirebaseFirestore.getInstance().collection("users")
+
+    // Firebase auth current user id
+    private val currentUser = FirebaseAuth.getInstance().currentUser?.uid
 
     // Search User Function
     fun searchUsers(query: String, onResult: (List<User>) -> Unit) {
@@ -17,9 +21,12 @@ class ChatRepository {
                     docFields.toObject(User::class.java)
                 }
 
-                // Filter by username or email contains query
-                val filtered = allUsers.filter {
-                    it.username.contains(query, ignoreCase = true) || it.email.contains(query, ignoreCase = true)
+                // Filter by username or email contains query. Except current user
+                val filtered = allUsers.filter { user ->
+                    user.username.contains(query, ignoreCase = true) ||
+                            user.email.contains(query, ignoreCase = true)
+                }.filter { user ->
+                    user.uid != currentUser
                 }
 
                 onResult(filtered)
