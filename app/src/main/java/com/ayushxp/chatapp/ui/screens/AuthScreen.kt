@@ -327,6 +327,8 @@ fun AuthScreen(navController: NavHostController, viewModel: AuthViewModel = view
                 } else if (lastAction == "signup") {
                     if(authError == "Email already exists") // email already exists toast
                         Toast.makeText(context, "Email already exists", Toast.LENGTH_SHORT).show()
+                    else if (authError == "Username already exists") // username already exists toast
+                        Toast.makeText(context, "Username already exists", Toast.LENGTH_SHORT).show()
                     else // signup unsuccessful toast
                         Toast.makeText(context, "Signup Unsuccessful", Toast.LENGTH_SHORT).show()
                 }

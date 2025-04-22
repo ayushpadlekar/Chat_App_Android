@@ -33,34 +33,48 @@ class AuthRepository {
     // Create new user with email & password & return result- true/false
     fun registerUser(email: String, pass: String, username: String, timestamp: Timestamp, result: (Boolean, String?)->Unit) {
 
-        fireAuth.createUserWithEmailAndPassword(email, pass)
-            .addOnCompleteListener {
-                if(it.isSuccessful) {
-                    val uid = fireAuth.currentUser?.uid ?: return@addOnCompleteListener
+        // Check if username already exists or not in the whole firestore db
+        fireStore.collection("users")
+            .whereEqualTo("username", username)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) { // Username is unique, proceed to create user
 
-                    // Add user details to Firestore
-                    fireStore.collection("users").document(uid)
-                        .set(
-                            hashMapOf(
-                                "uid" to uid,
-                                "email" to email,
-                                "username" to username,
-                                "timestamp" to timestamp,
-                            )
-                        ).addOnSuccessListener {
-                            result(true, null)
-                        }.addOnFailureListener {
-                            result(false, it.message)
+                    fireAuth.createUserWithEmailAndPassword(email, pass)
+                        .addOnCompleteListener {
+                            if(it.isSuccessful) {
+                                val uid = fireAuth.currentUser?.uid ?: return@addOnCompleteListener
+
+                                // Add user details to Firestore
+                                fireStore.collection("users").document(uid)
+                                    .set(
+                                        hashMapOf(
+                                            "uid" to uid,
+                                            "email" to email,
+                                            "username" to username,
+                                            "timestamp" to timestamp,
+                                        )
+                                    ).addOnSuccessListener {
+                                        result(true, null)
+                                    }.addOnFailureListener {
+                                        result(false, it.message)
+                                    }
+
+                            } else {
+                                val errMsg = when(it.exception) {
+                                    is FirebaseAuthUserCollisionException -> "Email already exists"
+                                    else -> it.exception?.message
+                                }
+                                result(false, errMsg)
+                            }
                         }
-
                 } else {
-                    val errMsg = when(it.exception) {
-                        is FirebaseAuthUserCollisionException -> "Email already exists"
-                        else -> it.exception?.message
-                    }
-                    result(false, errMsg)
+                    result(false, "Username already exists")
                 }
+            }.addOnFailureListener {
+                result(false, it.message)
             }
+
     }
 
     // Logout user
