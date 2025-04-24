@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Date
 
 class AuthRepository {
 
@@ -75,6 +76,32 @@ class AuthRepository {
                 result(false, it.message)
             }
 
+    }
+
+
+    // Get uid of current user
+    fun getCurrentUserId(): String? {
+        return fireAuth.currentUser?.uid
+    }
+
+    fun getCurrentUserAccountDetails(
+        results: (username: String?, email: String?, timestamp: Date?) -> Unit
+    ) {
+        val uid = getCurrentUserId()
+        if(uid == null) {
+            results(null, null, null)
+            return
+        }
+        fireStore.collection("users").document(uid).get()
+            .addOnSuccessListener { fields ->
+                val username = fields.getString("username")
+                val email = fields.getString("email")
+                val dateTime = fields.getTimestamp("timestamp")?.toDate()
+                results(username, email, dateTime)
+            }
+            .addOnFailureListener {
+                results(null, null, null)
+            }
     }
 
     // Logout user

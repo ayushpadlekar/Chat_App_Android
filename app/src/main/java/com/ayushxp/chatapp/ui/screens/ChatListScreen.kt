@@ -1,5 +1,6 @@
 package com.ayushxp.chatapp.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,9 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,11 +31,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -38,6 +45,7 @@ import com.ayushxp.chatapp.data.model.ChatPreview
 import com.ayushxp.chatapp.ui.components.NewChatFab
 import com.ayushxp.chatapp.ui.components.NoChatsUi
 import com.ayushxp.chatapp.ui.theme.ChatAppTheme
+import com.ayushxp.chatapp.viewmodel.AuthViewModel
 import com.ayushxp.chatapp.viewmodel.ChatViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -51,8 +59,21 @@ fun ChatListScreen(navController: NavHostController) {
     var secondaryCol = MaterialTheme.colorScheme.secondary
     var tertiaryCol = MaterialTheme.colorScheme.tertiary
 
+    // ChatViewModel instance & Chat Lists
     val chatVm: ChatViewModel = viewModel()
     val chatList by chatVm.chatList.collectAsState()
+
+    // AuthViewModel instance
+    val authVm: AuthViewModel = viewModel()
+    val username by authVm.username.collectAsState()
+    val email by authVm.email.collectAsState()
+    val createdTime by authVm.createdTime.collectAsState()
+
+    // Account info Dialog state
+    var accountDialog by remember { mutableStateOf(false) }
+//    var username by remember { mutableStateOf("") }
+//    var email by remember { mutableStateOf("") }
+//    var createdOn by remember { mutableStateOf("") }
 
     // Load chat list when screen opens
     LaunchedEffect(chatVm) {
@@ -73,15 +94,18 @@ fun ChatListScreen(navController: NavHostController) {
                         )
                     },
                 actions =
-                    {
+                    { // Account Button - for Account info & Sign Out
                         IconButton(
-                            onClick = {  }
+                            onClick = {
+                                authVm.getUserAccountDetails()
+                                accountDialog = !accountDialog
+                            }
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.MoreVert,
+                                imageVector = Icons.Filled.AccountCircle,
                                 tint = primaryCol,
                                 modifier = Modifier.size(30.dp),
-                                contentDescription = "More"
+                                contentDescription = "Account Info"
                             )
                         }
                     },
@@ -89,13 +113,14 @@ fun ChatListScreen(navController: NavHostController) {
             )
         },
         floatingActionButton = { NewChatFab(navController) }
-    ) { paddingValues ->
+    ) {
+
         if (chatList.isEmpty()) {
-            NoChatsUi(paddingValues)
+            NoChatsUi(it)
         } else {
             Column(
                 modifier = Modifier
-                    .padding(paddingValues)
+                    .padding(it)
                     .fillMaxSize()
             ) {
                 LazyColumn(
@@ -107,6 +132,80 @@ fun ChatListScreen(navController: NavHostController) {
                         ChatItem(chat, onClick = {
                             navController.navigate("chat/${chat.chatId}/${chat.otherUserId}/${chat.otherUsername}")
                         })
+                    }
+                }
+            }
+        }
+
+        if(accountDialog) {
+            Dialog(
+                onDismissRequest = { accountDialog = false }
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier
+                        .height(300.dp)
+                        .clip(RoundedCornerShape(10))
+                        .background(Color.White)
+                        .padding(horizontal = 20.dp)
+                ) {
+                    Row {
+                        Text(
+                            text = "Username: ",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = username,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = primaryCol
+                        )
+                    }
+
+                    Row {
+                        Text(
+                            text = "Email: ",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = email,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = primaryCol
+                        )
+                    }
+
+                    Row {
+                        Text(
+                            text = "Created: ",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = createdTime,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = primaryCol
+                        )
+                    }
+
+                    Button(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        onClick = {
+                            authVm.logout()
+                            accountDialog = !accountDialog
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                    ) {
+                        Text("Sign Out", color = Color.White)
                     }
                 }
             }

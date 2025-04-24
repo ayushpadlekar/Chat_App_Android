@@ -5,6 +5,10 @@ import com.ayushxp.chatapp.data.repository.AuthRepository
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class AuthViewModel: ViewModel() {
 
@@ -20,6 +24,17 @@ class AuthViewModel: ViewModel() {
     val authLoading: StateFlow<Boolean> = _authLoading
     val authSuccess: StateFlow<Boolean> = _authSuccess
     val authError: StateFlow<String?> = _authError
+
+    // For user account details to show in popup dialog & signout
+    // Private MutableStateFlows to observe Firestore- username, email, timestamp
+    private val _username = MutableStateFlow<String>("")
+    private val _email = MutableStateFlow<String>("")
+    private val _createdTime = MutableStateFlow<String>("")
+    // Public StateFlows to expose MutableStateFlows to the UI
+    val username = _username.asStateFlow()
+    val email = _email.asStateFlow()
+    val createdTime = _createdTime.asStateFlow()
+
 
     // Functions --------------------------------------------------------------
     // Login function
@@ -47,5 +62,22 @@ class AuthViewModel: ViewModel() {
     fun resetAuthState() {
         _authSuccess.value = false
         _authError.value = null
+    }
+
+
+    // get details of user's account like- username, email, timestamp
+    fun getUserAccountDetails() {
+        authRepo.getCurrentUserAccountDetails { username, email, timestamp ->
+            if(username != null && email != null && timestamp != null) {
+                _username.value = username
+                _email.value = email
+                _createdTime.value = SimpleDateFormat("dd/MM/yyyy \n hh:mm a", Locale.getDefault()).format(timestamp)
+            }
+        }
+    }
+
+    // logout user
+    fun logout() {
+        authRepo.logoutUser()
     }
 }
