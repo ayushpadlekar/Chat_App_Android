@@ -105,7 +105,8 @@ class AuthRepository {
     }
 
     // Logout user
-    fun logoutUser() {
+    fun logoutUser(completed: () -> Unit) {
         fireAuth.signOut()
+        completed()
     }
 }

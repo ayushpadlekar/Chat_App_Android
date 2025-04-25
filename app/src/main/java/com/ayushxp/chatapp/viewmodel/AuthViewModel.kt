@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 class AuthViewModel: ViewModel() {
@@ -25,7 +24,7 @@ class AuthViewModel: ViewModel() {
     val authSuccess: StateFlow<Boolean> = _authSuccess
     val authError: StateFlow<String?> = _authError
 
-    // For user account details to show in popup dialog & signout
+    // For user account details to show in popup dialog & signout ----------------------------
     // Private MutableStateFlows to observe Firestore- username, email, timestamp
     private val _username = MutableStateFlow<String>("")
     private val _email = MutableStateFlow<String>("")
@@ -34,6 +33,9 @@ class AuthViewModel: ViewModel() {
     val username = _username.asStateFlow()
     val email = _email.asStateFlow()
     val createdTime = _createdTime.asStateFlow()
+    // Private & public StateFlows to observe if user is Signed Out
+    private val _signOut = MutableStateFlow(false)
+    val signedOut = _signOut.asStateFlow()
 
 
     // Functions --------------------------------------------------------------
@@ -78,6 +80,8 @@ class AuthViewModel: ViewModel() {
 
     // logout user
     fun logout() {
-        authRepo.logoutUser()
+        authRepo.logoutUser {
+            _signOut.value = true
+        }
     }
 }

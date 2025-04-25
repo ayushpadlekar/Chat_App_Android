@@ -63,21 +63,30 @@ fun ChatListScreen(navController: NavHostController) {
     val chatVm: ChatViewModel = viewModel()
     val chatList by chatVm.chatList.collectAsState()
 
-    // AuthViewModel instance
+    // AuthViewModel instance & User Account details collect as states (to observe)
     val authVm: AuthViewModel = viewModel()
     val username by authVm.username.collectAsState()
     val email by authVm.email.collectAsState()
     val createdTime by authVm.createdTime.collectAsState()
+    val signedOut by authVm.signedOut.collectAsState()
 
     // Account info Dialog state
     var accountDialog by remember { mutableStateOf(false) }
-//    var username by remember { mutableStateOf("") }
-//    var email by remember { mutableStateOf("") }
-//    var createdOn by remember { mutableStateOf("") }
 
     // Load chat list when screen opens
     LaunchedEffect(chatVm) {
         chatVm.loadChatsForCurrentUser()
+    }
+
+    // Sign out & navigate to Auth screen if signedOut state is true
+    if(signedOut) {
+        LaunchedEffect(Unit) {
+            navController.navigate("auth") {
+                popUpTo("chatlist") {
+                    inclusive = true
+                }
+            }
+        }
     }
 
     Scaffold(
